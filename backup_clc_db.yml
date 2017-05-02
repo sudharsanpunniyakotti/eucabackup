@@ -1,0 +1,4 @@
+- hosts:
+  - clc
+  roles:
+  - eucalyptus-backupDB

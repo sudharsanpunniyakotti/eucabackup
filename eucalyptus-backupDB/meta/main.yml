@@ -1,0 +1,12 @@
+galaxy_info:
+  author: John Mille
+  description: Role to backup the CLC DB and export it to other hosts
+  license: GPLv3
+  min_ansible_version: 1.9
+  platforms:
+  - name: EL
+    versions:
+    - 6
+  #  - 7
+  galaxy_tags: []
+dependencies: []

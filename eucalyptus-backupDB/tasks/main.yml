@@ -1,0 +1,40 @@
+---
+# tasks file for eucalyptus-backupDB
+
+- name: TimeStamp
+  set_fact: timestamp_exec="{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.tz }}"
+
+- name: What time is it
+  debug: msg="{{ timestamp_exec }}"
+
+- name: Create TimeStamp folder to store the backup
+  file: state=directory path="{{ local_backup_directory }}/{{ timestamp_exec }}"
+  sudo: yes
+
+- name: Dump all DB files
+  script: dump_db.sh "{{ euca_version_family }}" "{{ local_backup_directory }}/{{ timestamp_exec }}"
+  when:
+  - not dump_backend
+  sudo: yes
+
+- name: Dump all DB files with backends
+  script: dump_db.sh "{{ euca_version_family }}" "{{ local_backup_directory }}/{{ timestamp_exec }}" --backend
+  when:
+  - dump_backend
+  sudo: yes
+
+- name: Copy to remote locations
+  command: rsync -avzrt --progress "{{ local_backup_directory }}/{{ timestamp_exec }}" "{{ remote_user }}"@"{{ item }}":"{{ remote_backup_directory }}/"
+  ignore_errors: true
+  poll: 60
+  sudo: yes
+  with_items:
+  - ufshost1
+  - ufshost2
+  - ufshost3
+
+
+- name: Delete created copies on CLC
+  file: path="{{ local_backup_directory }}/{{ timestamp_exec }}" state=absent
+  sudo: yes
+
